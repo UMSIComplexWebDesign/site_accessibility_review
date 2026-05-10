@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Museum Accessibility Checklist</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <h1>Museum accessibility checklist</h1>
+  <p>Based on the Smithsonian Guidelines for Accessible Exhibition Design</p>
+  <div class="progress-bar">
+    <div class="progress-fill" id="prog-fill"></div>
+  </div>
+  <div class="progress-label">
+    <span id="prog-text">0 of 39 rated</span>
+    <span id="prog-pct">0%</span>
+  </div>
+</header>
+
+<main>
+
+  <div class="meta-card">
+    <div class="field-group full">
+      <label for="f-museum">Museum name</label>
+      <input type="text" id="f-museum" placeholder="e.g. Detroit Institute of Arts">
+    </div>
+    <div class="field-group">
+      <label for="f-name">Your name</label>
+      <input type="text" id="f-name" placeholder="First Last">
+    </div>
+    <div class="field-group">
+      <label for="f-date">Date of visit</label>
+      <input type="date" id="f-date">
+    </div>
+  </div>
+
+  <div class="legend" aria-label="Rating key">
+    <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>Met</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#E24B4A"></div>Not met</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#BA7517"></div>Partial</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#888780"></div>N/A</div>
+  </div>
+
+  <div id="checklist"></div>
+
+  <div class="summary-card">
+    <div class="summary-head">Summary</div>
+    <div class="score-grid">
+      <div class="score-cell">
+        <div class="score-num" id="s-yes">0</div>
+        <div class="score-lbl">Met</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-num" id="s-no">0</div>
+        <div class="score-lbl">Not met</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-num" id="s-part">0</div>
+        <div class="score-lbl">Partial</div>
+      </div>
+      <div class="score-cell">
+        <div class="score-num" id="s-pct">—</div>
+        <div class="score-lbl">% met (excl. N/A)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn-primary" id="copy-btn" onclick="copyReport()">Copy as Markdown</button>
+    <button class="btn-secondary" onclick="window.print()">Print / save PDF</button>
+  </div>
+
+</main>
+
+<script>
+const DATA = [
+  { section: "Exhibits & objects", icon: "👁", color: "#E6F1FB", items: [
+    "Small objects mounted at or below 40 in. (seated eye level)",
+    "Display cases shallow enough to see objects from above",
+    "Objects have 70% color contrast against their background",
+    "Touchable objects or reproductions available for tactile access",
+    "Audio description provided for items that cannot be touched",
+    "No objects protrude more than 4 in. from walls at head height",
+    "No low floor-level objects that could be tripping hazards",
+    "At least 100 lux of light on displayed objects"
+  ]},
+  { section: "Labels & text", icon: "📝", color: "#EAF3DE", items: [
+    "Labels use plain English — short sentences, active voice",
+    "Legible font used — no all-caps or decorative scripts",
+    "Type size appropriate for the viewing distance",
+    "High contrast between label text and background (70%)",
+    "Labels printed on matte, non-glare surfaces",
+    "Wall labels centered at approx. 54 in. (readable seated & standing)",
+    "Label positions consistent throughout the exhibition",
+    "Alternative formats available: Braille, large print, or audio guide",
+    "100–300 lux of light on all label surfaces"
+  ]},
+  { section: "Audio/visual & interactives", icon: "🔊", color: "#FAEEDA", items: [
+    "All videos and audio programs are captioned or have printed scripts",
+    "Silent audiovisuals labelled to confirm no audio is being missed",
+    "Audio description available for image-based content",
+    "Interactive controls reachable from a wheelchair (max. 48 in. height)",
+    "Controls usable one-handed — no tight grip or twisting required",
+    "Touch targets at least 3 in. in diameter",
+    "Instructions provided in both print and audio formats",
+    "No furniture or objects blocking access to interactives",
+    "Assistive listening system available in programming spaces"
+  ]},
+  { section: "Pathways & navigation", icon: "♿", color: "#E1F5EE", items: [
+    "Main circulation route at least 36 in. wide (60 in. preferred)",
+    "At least 80 in. of clear overhead clearance throughout",
+    "Route is step-free, or ramps/lifts provided at level changes",
+    "Floor surface is stable, firm, and slip-resistant",
+    "Route well lit (50–100 lux) with no confusing shadow pools",
+    "70% color contrast between floor and walls/furniture",
+    "Accessible floor map available at the gallery entrance",
+    "More than one exit from the exhibition",
+    "60 in. wheelchair turning space at any dead ends"
+  ]},
+  { section: "Seating & furniture", icon: "🪑", color: "#EEEDFE", items: [
+    "Seating provided in every gallery (or immediately adjacent)",
+    "At least 50% of seats are accessible",
+    "Seats have both back and arm support; seat height 17–19 in.",
+    "Space for wheelchair users beside fixed seating",
+    "Seats clearly visible — contrast with floors and walls",
+    "Seats do not block pathways or interactive controls",
+    "Display cases have cane-detectable lower edges (at or below 27 in.)"
+  ]},
+  { section: "Safety & content", icon: "🚨", color: "#FAECE7", items: [
+    "Both visual and audible fire alarms are present",
+    "Accessible emergency exits clearly marked with access symbols",
+    "Exhibition addresses multiple intellectual levels and sensory channels",
+    "People with disabilities represented respectfully in exhibit content",
+    "Labels use person-first language throughout"
+  ]}
+];
+
+const TOTAL = DATA.reduce((a, s) => a + s.items.length, 0);
+const ratings = {};
+const notes = {};
+
+function buildChecklist() {
+  const el = document.getElementById('checklist');
+  let idx = 0;
+
+  DATA.forEach(s => {
+    const sec = document.createElement('div');
+    sec.className = 'section';
+
+    const head = document.createElement('div');
+    head.className = 'section-head';
+    head.innerHTML = `
+      <div class="section-icon" style="background:${s.color};font-size:14px" aria-hidden="true">${s.icon}</div>
+      <span class="section-title">${s.section}</span>`;
+    sec.appendChild(head);
+
+    s.items.forEach(item => {
+      const id = idx++;
+      const noteId = `note-${id}`;
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.innerHTML = `
+        <p class="item-text" id="item-${id}">${item}</p>
+        <div class="btn-group" role="group" aria-labelledby="item-${id}">
+          <button class="rtn" onclick="rate(${id},'yes',this)" aria-pressed="false">Met</button>
+          <button class="rtn" onclick="rate(${id},'no',this)"  aria-pressed="false">Not met</button>
+          <button class="rtn" onclick="rate(${id},'part',this)" aria-pressed="false">Partial</button>
+          <button class="rtn" onclick="rate(${id},'na',this)"  aria-pressed="false">N/A</button>
+        </div>
+        <div class="note-area">
+          <label for="${noteId}" class="sr-only">Note for: ${item}</label>
+          <textarea id="${noteId}" rows="1" placeholder="Optional note…"
+            oninput="autoResize(this); saveNote(${id}, this.value)"></textarea>
+        </div>`;
+      sec.appendChild(row);
+    });
+
+    el.appendChild(sec);
+  });
+}
+
+function rate(id, val, btn) {
+  const prev = ratings[id];
+  const group = btn.closest('.btn-group');
+  group.querySelectorAll('.rtn').forEach(b => {
+    b.className = 'rtn';
+    b.setAttribute('aria-pressed', 'false');
+  });
+  if (prev === val) {
+    delete ratings[id];
+  } else {
+    ratings[id] = val;
+    btn.classList.add('sel-' + val);
+    btn.setAttribute('aria-pressed', 'true');
+  }
+  updateSummary();
+}
+
+function saveNote(id, val) {
+  notes[id] = val;
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+function updateSummary() {
+  const vals = Object.values(ratings);
+  const yes  = vals.filter(v => v === 'yes').length;
+  const no   = vals.filter(v => v === 'no').length;
+  const part = vals.filter(v => v === 'part').length;
+  const na   = vals.filter(v => v === 'na').length;
+  const rated = vals.length;
+  const eligible = rated - na;
+  const pct = eligible > 0 ? Math.round((yes / eligible) * 100) : null;
+
+  document.getElementById('s-yes').textContent  = yes;
+  document.getElementById('s-no').textContent   = no;
+  document.getElementById('s-part').textContent = part;
+  document.getElementById('s-pct').textContent  = pct !== null ? pct + '%' : '—';
+  document.getElementById('prog-text').textContent = rated + ' of ' + TOTAL + ' rated';
+  document.getElementById('prog-pct').textContent  = Math.round((rated / TOTAL) * 100) + '%';
+  document.getElementById('prog-fill').style.width = Math.round((rated / TOTAL) * 100) + '%';
+}
+
+function copyReport() {
+  const museum = document.getElementById('f-museum').value || '(not entered)';
+  const name   = document.getElementById('f-name').value   || '(not entered)';
+  const date   = document.getElementById('f-date').value   || '(not entered)';
+
+  const vals     = Object.values(ratings);
+  const yes      = vals.filter(v => v === 'yes').length;
+  const no       = vals.filter(v => v === 'no').length;
+  const part     = vals.filter(v => v === 'part').length;
+  const na       = vals.filter(v => v === 'na').length;
+  const eligible = vals.length - na;
+  const pct      = eligible > 0 ? Math.round((yes / eligible) * 100) + '%' : 'not yet rated';
+
+  const lines = [
+    `# Accessibility review: ${museum}`,
+    '',
+    `**Observer:** ${name}  `,
+    `**Date:** ${date}  `,
+    `**Overall compliance:** ${pct} of rated items met (${yes} met, ${no} not met, ${part} partial, ${na} N/A)`,
+    ''
+  ];
+
+  let idx = 0;
+  DATA.forEach(s => {
+    lines.push(`## ${s.section}`);
+    lines.push('');
+    s.items.forEach(item => {
+      const r     = ratings[idx];
+      const emoji = r === 'yes'  ? '✅'
+                  : r === 'no'   ? '❌'
+                  : r === 'part' ? '⚠️'
+                  : r === 'na'   ? '➖'
+                  :                '⬜';
+      const label = r === 'yes'  ? '**Met**'
+                  : r === 'no'   ? '**Not met**'
+                  : r === 'part' ? '**Partial**'
+                  : r === 'na'   ? '**N/A**'
+                  :                '*(not rated)*';
+      lines.push(`- ${emoji} ${item} — ${label}`);
+      if (notes[idx]) lines.push(`  > ${notes[idx]}`);
+      idx++;
+    });
+    lines.push('');
+  });
+
+  lines.push('---');
+  lines.push('*Checklist based on the [Smithsonian Guidelines for Accessible Exhibition Design](https://www.sifacilities.si.edu/sites/default/files/Files/Accessibility/accessible-exhibition-design1.pdf)*');
+
+  navigator.clipboard.writeText(lines.join('\n')).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('success');
+    setTimeout(() => {
+      btn.textContent = 'Copy as Markdown';
+      btn.classList.remove('success');
+    }, 2000);
+  });
+}
+
+buildChecklist();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,132 @@
+/* Post layout */
+
+.site-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e2e0;
+  padding: 1rem 1.5rem;
+}
+
+.site-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a18;
+  text-decoration: none;
+}
+
+.site-title:hover {
+  text-decoration: underline;
+}
+
+.post-content {
+  max-width: 680px;
+  margin: 2rem auto;
+  padding: 0 1rem 4rem;
+}
+
+.site-footer {
+  border-top: 1px solid #e2e2e0;
+  padding: 1rem 1.5rem;
+  font-size: 13px;
+}
+
+.site-footer a {
+  color: #185FA5;
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Post typography */
+
+.post-content h1 {
+  font-size: 26px;
+  font-weight: 600;
+  color: #1a1a18;
+  line-height: 1.3;
+  margin-bottom: 1rem;
+}
+
+.post-content h2 {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1a1a18;
+  margin-top: 2rem;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #e2e2e0;
+}
+
+.post-content p {
+  font-size: 15px;
+  color: #1a1a18;
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+}
+
+.post-content strong {
+  font-weight: 600;
+  color: #1a1a18;
+}
+
+.post-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.post-content ul li {
+  font-size: 14px;
+  color: #1a1a18;
+  line-height: 1.5;
+  padding: 6px 0;
+  border-bottom: 1px solid #f1efe8;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.post-content ul li:last-child {
+  border-bottom: none;
+}
+
+/* Blockquote used for student notes */
+
+.post-content blockquote {
+  margin: 4px 0 4px 1.5rem;
+  padding: 6px 10px;
+  border-left: 3px solid #e2e2e0;
+  font-size: 13px;
+  color: #5f5e5a;
+  font-style: italic;
+}
+
+.post-content blockquote p {
+  font-size: 13px;
+  color: #5f5e5a;
+  margin: 0;
+}
+
+/* Source link at bottom */
+
+.post-content hr {
+  border: none;
+  border-top: 1px solid #e2e2e0;
+  margin: 2rem 0 1rem;
+}
+
+.post-content em {
+  font-style: italic;
+  color: #5f5e5a;
+  font-size: 13px;
+}
+
+.post-content a {
+  color: #185FA5;
+  text-decoration: none;
+}
+
+.post-content a:hover {
+  text-decoration: underline;
+}
